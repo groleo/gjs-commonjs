@@ -55,9 +55,8 @@ m4_define([prj_gir_namespace], [GjsCommonjs])
 
 # Check for programs
 AC_PROG_LIBTOOL
-AC_PROG_CC
+AC_PROG_CXX
 AC_PROG_INSTALL
-AM_PROG_CC_C_O
 
 # Enable pkg-config
 PKG_PROG_PKG_CONFIG
@@ -68,7 +67,6 @@ PKG_CHECK_MODULES(GLIB, gio-2.0 >= $GLIB_REQUIRED
 		        glib-2.0 >= $GLIB_REQUIRED
 		        gthread-2.0 >= $GLIB_REQUIRED
 		        gobject-2.0 >= $GLIB_REQUIRED)
-PKG_CHECK_MODULES(MOZJS, mozilla-js >= 4.0)
 PKG_CHECK_MODULES(GJS, gjs-1.0 >= 0.4)
 
 # GObject-Introspection check

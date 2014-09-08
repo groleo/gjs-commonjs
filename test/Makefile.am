@@ -7,13 +7,11 @@ AM_CFLAGS = \
 	-Wall -g3 -O0 -ggdb \
 	-DTESTS_DIR="\"$(tests_dir)\"" \
 	$(GLIB_CFLAGS) \
-	$(MOZJS_CFLAGS) \
 	$(GJS_CFLAGS) \
 	-I$(top_srcdir)/gjs-commonjs
 
 AM_LIBS = \
 	$(GLIB_LIBS) \
-	$(MOZJS_LIBS) \
 	$(GJS_LIBS) \
 	$(top_srcdir)/gjs-commonjs/lib@PRJ_API_NAME@.la
 

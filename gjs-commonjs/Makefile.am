@@ -11,7 +11,7 @@ jslibdir = $(libdir)/@PRJ_API_NAME@/js
 
 CLEANFILES = *~ @PRJ_API_NAME@.pc
 
-AM_CFLAGS = -Wall -Werror -g3 -O0 -ggdb \
+AM_CPPFLAGS = -Wall -Werror -g3 -O0 -ggdb \
 	-DPKGDATADIR="\"$(pkgdatadir)\"" \
 	-DJS_LIB_DIR="\"$(jslibdir)\"" \
 	-DENABLE_TESTS="\"$(enable_tests)\""
@@ -20,9 +20,9 @@ AM_CFLAGS = -Wall -Werror -g3 -O0 -ggdb \
 lib_LTLIBRARIES = lib@PRJ_API_NAME@.la
 
 # libgjs-commonjs
-source_c = \
-	gjs-require.c \
-	gjs-commonjs-context.c
+source_cxx = \
+	gjs-require.cpp \
+	gjs-commonjs-context.cpp
 
 source_h = \
 	gjs-require.h \
@@ -32,13 +32,11 @@ source_h_priv =
 
 lib@PRJ_API_NAME@_la_LIBADD = \
 	$(GLIB_LIBS) \
-	$(MOZJS_LIBS) \
 	$(GJS_LIBS)
 
-lib@PRJ_API_NAME@_la_CFLAGS  = \
+lib@PRJ_API_NAME@_la_CXXFLAGS  = \
 	$(AM_CFLAGS) \
 	$(GLIB_CFLAGS) \
-	$(MOZJS_CFLAGS) \
 	$(GJS_CFLAGS)
 
 lib@PRJ_API_NAME@_la_LDFLAGS = \
@@ -46,7 +44,7 @@ lib@PRJ_API_NAME@_la_LDFLAGS = \
 	-no-undefined
 
 lib@PRJ_API_NAME@_la_SOURCES = \
-	$(source_c) \
+	$(source_cxx) \
 	$(source_h) \
 	$(source_h_priv)
 
@@ -63,11 +61,11 @@ INTROSPECTION_GIRS =
 INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir) --warn-all
 INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
 
-introspection_sources = $(prj_HEADERS) $(source_c)
+introspection_sources = $(prj_HEADERS) $(source_cxx)
 
 @GIR_API_NAME@.gir: lib@PRJ_API_NAME@.la Makefile
 @GIR_TARGET_NAME@_INCLUDES = GLib-2.0 GObject-2.0 Gio-2.0
-@GIR_TARGET_NAME@_CFLAGS = $(INCLUDES) $(MOZJS_CFLAGS) $(GJS_CFLAGS)
+@GIR_TARGET_NAME@_CFLAGS = $(INCLUDES) $(GJS_CFLAGS)
 @GIR_TARGET_NAME@_LIBS = @PRJ_API_NAME@
 @GIR_TARGET_NAME@_FILES = $(addprefix $(srcdir)/,$(introspection_sources))
 
@@ -82,20 +80,18 @@ typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
 # gjs-commonjs
 bin_PROGRAMS = gjs-commonjs
 
-gjs_commonjs_CFLAGS = \
+gjs_commonjs_CXXFLAGS = \
 	$(AM_CFLAGS) \
 	$(GLIB_CFLAGS) \
-	$(MOZJS_CFLAGS) \
 	$(GJS_CFLAGS)
 
 gjs_commonjs_LDADD = \
 	$(GLIB_LIBS) \
-	$(MOZJS_LIBS) \
 	$(GJS_LIBS) \
 	-l@PRJ_API_NAME@
 
 gjs_commonjs_SOURCES = \
-	gjs-commonjs-main.c
+	gjs-commonjs-main.cpp
 
 CLEANFILES += $(dist_gir_DATA) $(typelib_DATA)
 endif
