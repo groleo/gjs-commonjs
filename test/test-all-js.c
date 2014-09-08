@@ -21,6 +21,8 @@
  */
 
 #include <gjs-commonjs/gjs-commonjs.h>
+#include <string.h>
+
 
 typedef struct
 {
@@ -78,7 +80,6 @@ main (gint argc, gchar *argv[])
   GDir *dir;
 
   g_test_init (&argc, &argv, NULL);
-  g_type_init ();
 
   test_dir = g_path_get_dirname (argv[0]);
   js_test_dir = g_build_filename (TESTS_DIR, "js", NULL);
