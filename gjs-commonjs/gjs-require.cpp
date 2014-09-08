@@ -24,6 +24,7 @@
 #include <gjs/gjs.h>
 
 #include "gjs-require.h"
+#include <gjs/gjs-module.h>
 
 G_DEFINE_TYPE (GjsRequire, gjs_require, G_TYPE_OBJECT)
 
@@ -58,7 +59,7 @@ enum
   PROP_CONTEXT
 };
 
-static void     gjs_require_class_init         (GjsRequireClass *class);
+static void     gjs_require_class_init         (GjsRequireClass *klass);
 static void     gjs_require_init               (GjsRequire *self);
 
 static void     gjs_require_finalize           (GObject *obj);
@@ -79,9 +80,9 @@ static void     define_require_function        (GjsRequire *self);
 static void     create_search_paths            (GjsRequire *self);
 
 static void
-gjs_require_class_init (GjsRequireClass *class)
+gjs_require_class_init (GjsRequireClass *klass)
 {
-  GObjectClass *obj_class = G_OBJECT_CLASS (class);
+  GObjectClass *obj_class = G_OBJECT_CLASS (klass);
 
   obj_class->finalize = gjs_require_finalize;
   obj_class->get_property = gjs_require_get_property;
@@ -91,8 +92,8 @@ gjs_require_class_init (GjsRequireClass *class)
                                    g_param_spec_pointer ("context",
                                                          "Gjs context",
                                                          "The Gjs context object to define 'require' API into",
-                                                         G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY |
-                                                         G_PARAM_STATIC_STRINGS));
+                                                         (GParamFlags)(G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS))
+                                   );
 
 
   /* add private structure */
@@ -140,9 +141,9 @@ gjs_require_set_property (GObject      *obj,
       {
         GjsContext *gjs_cx;
 
-        CX = g_value_get_pointer (value);
+        CX = (JSContext*)g_value_get_pointer (value);
 
-        gjs_cx = JS_GetContextPrivate (CX);
+        gjs_cx = (GjsContext*)JS_GetContextPrivate (CX);
         g_assert (GJS_IS_CONTEXT (gjs_cx));
         g_object_set_data (G_OBJECT (gjs_cx),
                            SELF_DATA_KEY,
@@ -196,7 +197,7 @@ static JSBool
 seal_object_property (JSContext *context, JSObject *obj, const char *name)
 {
   JSBool found;
-  uintN attrs;
+  unsigned int attrs;
 
   if (! JS_GetPropertyAttributes (context,
                                   obj,
@@ -265,7 +266,7 @@ search_module_in_paths (JSContext    *cx,
                         GError      **error)
 {
   guint len;
-  gint i;
+  guint i;
   const gchar *path;
 
   JS_GetArrayLength (cx, paths, &len);
@@ -333,7 +334,7 @@ load_module_from_file (GjsRequire   *self,
       const gchar *current_module_dir;
       gchar *tmp_file_name;
 
-      current_module_dir = g_queue_peek_head (self->priv->dir_stack);
+      current_module_dir = (const gchar*)g_queue_peek_head (self->priv->dir_stack);
       if (current_module_dir == NULL)
         current_module_dir = ".";
 
@@ -450,7 +451,7 @@ add_exports_property_to_module_scope (JSContext   *cx,
 }
 
 static JSBool
-require_func_callback (JSContext *cx, uintN argc, jsval *vp)
+require_func_callback (JSContext *cx, unsigned int argc, jsval *vp)
 {
   GjsRequire *self;
 
@@ -471,7 +472,7 @@ require_func_callback (JSContext *cx, uintN argc, jsval *vp)
 
   jsval retval;
 
-  self = CX_GET_SELF (cx);
+  self = (GjsRequire*)CX_GET_SELF (cx);
 
   /* obtain the module name from argument 0 */
   st = JS_ValueToString (cx, JS_ARGV (cx, vp) [0]);
@@ -580,7 +581,7 @@ require_func_callback (JSContext *cx, uintN argc, jsval *vp)
   if (! is_gi_module)
     {
       /* pop current module's dir from the stack */
-      module_dir = g_queue_pop_head (self->priv->dir_stack);
+      module_dir = (gchar*)g_queue_pop_head (self->priv->dir_stack);
       g_free (module_dir);
 
       g_free (top_level_module_id);
@@ -657,7 +658,7 @@ gjs_require_new (JSContext *context)
 {
   g_return_val_if_fail (context != NULL, NULL);
 
-  return g_object_new (GJS_TYPE_REQUIRE,
+  return (GjsRequire*)g_object_new (GJS_TYPE_REQUIRE,
                        "context", context,
                        NULL);
 }

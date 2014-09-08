@@ -35,8 +35,6 @@ main (gint argc, gchar *argv[])
       return -1;
     }
 
-  g_type_init ();
-
   context = gjs_commonjs_context_new ();
 
   if (! gjs_commonjs_context_eval_file (context,

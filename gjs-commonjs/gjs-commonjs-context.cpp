@@ -45,7 +45,7 @@ enum
   PROP_REQUIRE
 };
 
-static void     gjs_commonjs_context_class_init         (GjsCommonjsContextClass *class);
+static void     gjs_commonjs_context_class_init         (GjsCommonjsContextClass *klass);
 static void     gjs_commonjs_context_init               (GjsCommonjsContext *self);
 
 static void     gjs_commonjs_context_finalize           (GObject *obj);
@@ -56,9 +56,9 @@ static void     gjs_commonjs_context_get_property       (GObject    *obj,
                                                          GParamSpec *pspec);
 
 static void
-gjs_commonjs_context_class_init (GjsCommonjsContextClass *class)
+gjs_commonjs_context_class_init (GjsCommonjsContextClass *klass)
 {
-  GObjectClass *obj_class = G_OBJECT_CLASS (class);
+  GObjectClass *obj_class = G_OBJECT_CLASS (klass);
 
   obj_class->finalize = gjs_commonjs_context_finalize;
   obj_class->get_property = gjs_commonjs_context_get_property;
@@ -68,16 +68,18 @@ gjs_commonjs_context_class_init (GjsCommonjsContextClass *class)
                                                         "Gjs Context",
                                                         "The #GjsContext object wrapped by this context",
                                                         GJS_TYPE_CONTEXT,
-                                                        G_PARAM_READABLE |
-                                                        G_PARAM_STATIC_STRINGS));
+                                                        (GParamFlags)(G_PARAM_READABLE | G_PARAM_STATIC_STRINGS)
+                                                      )
+                                   );
 
   g_object_class_install_property (obj_class, PROP_CONTEXT,
                                    g_param_spec_object ("require",
                                                         "Gjs Require",
                                                         "The #GjsRequire object wrapped by this context",
                                                         GJS_TYPE_REQUIRE,
-                                                        G_PARAM_READABLE |
-                                                        G_PARAM_STATIC_STRINGS));
+                                                        (GParamFlags)(G_PARAM_READABLE | G_PARAM_STATIC_STRINGS)
+                                                        )
+                                   );
 
 
   /* add private structure */
@@ -95,7 +97,7 @@ gjs_commonjs_context_init (GjsCommonjsContext *self)
 
   priv->context = gjs_context_new ();
 
-  cx = gjs_context_get_native_context (priv->context);
+  cx = (JSContext*) gjs_context_get_native_context (priv->context);
 
   priv->require = gjs_require_new (cx);
 }
@@ -142,8 +144,7 @@ gjs_commonjs_context_get_property (GObject    *obj,
 GjsCommonjsContext *
 gjs_commonjs_context_new ()
 {
-  return g_object_new (GJS_TYPE_COMMONJS_CONTEXT,
-                       NULL);
+  return (GjsCommonjsContext*)g_object_new (GJS_TYPE_COMMONJS_CONTEXT, NULL);
 }
 
 gboolean
