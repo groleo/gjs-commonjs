@@ -24,13 +24,14 @@
 #define __GJS_REQUIRE_H__
 
 #include <glib-object.h>
-#include <jsapi.h>
 
 G_BEGIN_DECLS
 
 typedef struct _GjsRequire GjsRequire;
 typedef struct _GjsRequireClass GjsRequireClass;
 typedef struct _GjsRequirePrivate GjsRequirePrivate;
+
+struct JSContext;
 
 struct _GjsRequire
 {
@@ -54,7 +55,7 @@ struct _GjsRequireClass
 
 GType        gjs_require_get_type                (void) G_GNUC_CONST;
 
-GjsRequire * gjs_require_new                     (JSContext *context);
+GjsRequire * gjs_require_new                     (struct JSContext *context);
 
 void         gjs_require_push_to_exported_paths  (GjsRequire  *self,
                                                   const gchar *path);
