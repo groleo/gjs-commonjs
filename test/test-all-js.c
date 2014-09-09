@@ -22,6 +22,7 @@
 
 #include <gjs-commonjs/gjs-commonjs.h>
 #include <string.h>
+#include <locale.h>
 
 
 typedef struct
@@ -79,6 +80,15 @@ main (gint argc, gchar *argv[])
   const gchar *name;
   GDir *dir;
 
+  /* The tests are known to fail in the presence of the JIT;
+   * we leak objects.
+   * https://bugzilla.gnome.org/show_bug.cgi?id=616193
+   */
+  g_setenv("GJS_DISABLE_JIT", "1", FALSE);
+  /* The fact that this isn't the default is kind of lame... */
+  g_setenv("GJS_DEBUG_OUTPUT", "stderr", FALSE);
+
+  setlocale(LC_ALL, "");
   g_test_init (&argc, &argv, NULL);
 
   test_dir = g_path_get_dirname (argv[0]);
