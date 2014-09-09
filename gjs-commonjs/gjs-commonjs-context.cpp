@@ -92,6 +92,7 @@ gjs_commonjs_context_init (GjsCommonjsContext *self)
   GjsCommonjsContextPrivate *priv;
   JSContext *cx;
 
+
   priv = GJS_COMMONJS_CONTEXT_GET_PRIVATE (self);
   self->priv = priv;
 

@@ -34,7 +34,6 @@ G_DEFINE_TYPE (GjsRequire, gjs_require, G_TYPE_OBJECT)
 
 #define SELF_DATA_KEY "gjs-commonjs/require-obj"
 
-#define CX (self->priv->context)
 #define CX_GET_SELF(cx) (g_object_get_data (G_OBJECT (JS_GetContextPrivate (cx)), SELF_DATA_KEY))
 
 #define GI_MODULE_PREFIX "/gi/"
@@ -43,6 +42,7 @@ G_DEFINE_TYPE (GjsRequire, gjs_require, G_TYPE_OBJECT)
 struct _GjsRequirePrivate
 {
   JSContext *context;
+  JSObject *global;
 
   JSObject *exported_paths;
   JSObject *private_paths;
@@ -141,9 +141,9 @@ gjs_require_set_property (GObject      *obj,
       {
         GjsContext *gjs_cx;
 
-        CX = (JSContext*)g_value_get_pointer (value);
+        self->priv->context = (JSContext*)g_value_get_pointer (value);
 
-        gjs_cx = (GjsContext*)JS_GetContextPrivate (CX);
+        gjs_cx = (GjsContext*)JS_GetContextPrivate (self->priv->context);
         g_assert (GJS_IS_CONTEXT (gjs_cx));
         g_object_set_data (G_OBJECT (gjs_cx),
                            SELF_DATA_KEY,
@@ -198,6 +198,7 @@ seal_object_property (JSContext *context, JSObject *obj, const char *name)
 {
   JSBool found;
   unsigned int attrs;
+  JSAutoCompartment ac(context, obj);
 
   if (! JS_GetPropertyAttributes (context,
                                   obj,
@@ -269,6 +270,7 @@ search_module_in_paths (JSContext    *cx,
   guint i;
   const gchar *path;
 
+  JSAutoCompartment ac(cx, paths);
   JS_GetArrayLength (cx, paths, &len);
 
   for (i = 0; i < len; i++)
@@ -359,7 +361,7 @@ load_module_from_file (GjsRequire   *self,
     }
   else
     {
-      if (! search_module_in_paths (CX,
+      if (! search_module_in_paths (self->priv->context,
                                     self->priv->exported_paths,
                                     module_id_dot_js,
                                     script,
@@ -371,7 +373,7 @@ load_module_from_file (GjsRequire   *self,
           if ((*error)->code == G_FILE_ERROR_NOENT)
             {
               g_clear_error (error);
-              if (! search_module_in_paths (CX,
+              if (! search_module_in_paths (self->priv->context,
                                             self->priv->private_paths,
                                             module_id_dot_js,
                                             script,
@@ -406,6 +408,7 @@ add_module_property_to_module_scope (JSContext   *cx,
   JSObject *module;
   jsval value;
   JSString *st;
+  JSAutoCompartment ac(cx, scope);
 
   /* create the 'module' object */
   module = JS_NewObject (cx, NULL, NULL, NULL);
@@ -436,6 +439,7 @@ add_exports_property_to_module_scope (JSContext   *cx,
   JSObject *exports;
   jsval value;
 
+  JSAutoCompartment ac(cx, scope);
   /* create the 'exports' object, into which API will be added */
   exports = JS_NewObject (cx, NULL, NULL, NULL);
   g_assert (exports != NULL);
@@ -471,6 +475,8 @@ require_func_callback (JSContext *cx, unsigned int argc, jsval *vp)
   gsize script_len;
 
   jsval retval;
+  
+  JSAutoCompartment ac(cx, JS_GetGlobalObject (cx));
 
   self = (GjsRequire*)CX_GET_SELF (cx);
 
@@ -601,9 +607,10 @@ define_require_function (GjsRequire *self)
   JSObject *func_obj;
   jsval value;
 
+  JSAutoCompartment ac(self->priv->context, JS_GetGlobalObject (self->priv->context));
   /* define the native 'require' function */
-  func = JS_DefineFunction (CX,
-                            JS_GetGlobalObject (CX),
+  func = JS_DefineFunction (self->priv->context,
+                            JS_GetGlobalObject (self->priv->context),
                             "require",
                             require_func_callback,
                             1,
@@ -616,24 +623,25 @@ define_require_function (GjsRequire *self)
 
   /* add 'paths' array as a property of 'require' function */
   value = OBJECT_TO_JSVAL (self->priv->exported_paths);
-  JS_SetProperty (CX, func_obj, "paths", &value);
+  JS_SetProperty (self->priv->context, func_obj, "paths", &value);
 
   /* prevent 'paths' property from being modified or removed */
-  seal_object_property (CX, func_obj, "paths");
+  seal_object_property (self->priv->context, func_obj, "paths");
 
   /* seal object of 'require' function */
-  JS_FreezeObject (CX, func_obj);
+  JS_FreezeObject (self->priv->context, func_obj);
 }
 
 static void
 create_search_paths (GjsRequire *self)
 {
+  JSAutoCompartment ac(self->priv->context, JS_GetGlobalObject (self->priv->context));
   /* create exported (accessible from JS) 'paths' array */
-  self->priv->exported_paths = JS_NewArrayObject (CX, 0, NULL);
+  self->priv->exported_paths = JS_NewArrayObject (self->priv->context, 0, NULL);
   g_assert (self->priv->exported_paths != NULL);
 
   /* create private paths array */
-  self->priv->private_paths = JS_NewArrayObject (CX, 0, NULL);
+  self->priv->private_paths = JS_NewArrayObject (self->priv->context, 0, NULL);
   g_assert (self->priv->private_paths != NULL);
 }
 
@@ -644,6 +652,7 @@ push_path_to_array (JSContext *cx, JSObject *paths, const gchar *path)
   JSString *st;
   guint len;
 
+  JSAutoCompartment ac(cx, paths);
   st = JS_NewStringCopyN (cx, path, strlen (path));
   val = STRING_TO_JSVAL (st);
 
@@ -668,7 +677,7 @@ gjs_require_push_to_exported_paths (GjsRequire *self, const gchar *path)
 {
   g_return_if_fail (GJS_IS_REQUIRE (self));
 
-  push_path_to_array (CX, self->priv->exported_paths, path);
+  push_path_to_array (self->priv->context, self->priv->exported_paths, path);
 }
 
 void
@@ -676,5 +685,5 @@ gjs_require_push_to_private_paths (GjsRequire *self, const gchar *path)
 {
   g_return_if_fail (GJS_IS_REQUIRE (self));
 
-  push_path_to_array (CX, self->priv->private_paths, path);
+  push_path_to_array (self->priv->context, self->priv->private_paths, path);
 }
