@@ -2,10 +2,12 @@ MAINTAINERCLEANFILES = \
 	Makefile.in
 
 tests_dir = `pwd`/
+top_dir = `pwd`/..
 
 AM_CFLAGS = \
 	-Wall -g3 -O0 -ggdb \
 	-DTESTS_DIR="\"$(tests_dir)\"" \
+	-DTOP_DIR="\"$(top_dir)\"" \
 	$(GLIB_CFLAGS) \
 	$(GJS_CFLAGS) \
 	-I$(top_srcdir)/gjs-commonjs

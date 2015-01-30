@@ -41,6 +41,7 @@ setup (GjsTestJSFixture *fix,
   fix->context = gjs_commonjs_context_new ();
   require = gjs_commonjs_context_get_require (fix->context);
 
+  gjs_require_push_to_private_paths (require, TOP_DIR "/js");
   gjs_require_push_to_private_paths (require, TESTS_DIR "/js");
 }
 
