@@ -6,8 +6,7 @@
 // Eduardo Lima Mitev <elima@igalia.com>
 //
 
-const Assert = require ("common/assert");
-const Test = require ("common/test");
+const Assert = require ("assert");
 
 function testRequireIsDefined () {
     // 'require' exists and is a function
@@ -41,4 +40,4 @@ function testRequireModuleNonExistent () {
     Assert.throws (function () { let someModule = require ("thisModuleDoesntExist"); });
 }
 
-Test.run (this);
+require("test").run (this);

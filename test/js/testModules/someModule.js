@@ -1,4 +1,4 @@
-const Assert = require ("common/assert");
+const Assert = require ("assert");
 
 // 'exports' exists and is an object
 Assert.ok (exports);

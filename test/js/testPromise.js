@@ -6,8 +6,7 @@
 // Eduardo Lima Mitev <elima@igalia.com>
 //
 
-const Assert = require ("common/assert");
-const Test = require ("common/test");
+const Assert = require ("assert");
 const Promise = require ("promise");
 
 function testModuleExports () {
@@ -150,4 +149,4 @@ function testJoin () {
     Assert.ok (callbackCalled);
 }
 
-Test.run (this);
+require ("test").run(this);
