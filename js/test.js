@@ -12,7 +12,7 @@
 //   http://github.com/280north/narwhal/blob/master/lib/test.js
 //
 
-const Assert = require ("./assert");
+const Assert = require ("assert");
 
 function run (test) {
     if (typeof test === "string")
