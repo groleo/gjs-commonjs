@@ -23,7 +23,6 @@ assert.AssertionError = function (options) {
     this.expected = options.expected;
     this.operator = options.operator;
 };
-
 assert.AssertionError.prototype = {
     __proto__: Error.prototype,
 
@@ -157,4 +156,5 @@ if (this["exports"]) {
     exports.notEqual = assert.notEqual;
     exports.strictEqual = assert.strictEqual;
     exports.throws = assert.throws;
+    exports.AssertionError = assert.AssertionError;
 }
