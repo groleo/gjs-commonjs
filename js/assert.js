@@ -106,6 +106,7 @@ assert.strictEqual = function (actual, expected, message) {
         (this.pass || assert.pass) (message);
 };
 
+
 assert.notStrictEqual = function (actual, expected, message) {
     if (actual === expected)
         (this.fail || assert.fail) ({
@@ -155,6 +156,7 @@ if (this["exports"]) {
     exports.equal = assert.equal;
     exports.notEqual = assert.notEqual;
     exports.strictEqual = assert.strictEqual;
+    exports.notStrictEqual = assert.notStrictEqual;
     exports.throws = assert.throws;
     exports.AssertionError = assert.AssertionError;
 }
