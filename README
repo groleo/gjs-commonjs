@@ -1,0 +1,9 @@
+Compile
+=======
+
+./autogen.sh
+make
+
+Run tests
+=========
+./test/test-all-js
