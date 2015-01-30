@@ -30,6 +30,7 @@ function run (test) {
                     test.setup ();
 
                 try {
+                    print("testing: "+property);
                     test[property] (Assert);
                     failures++;
                 }
